@@ -28,7 +28,31 @@ const reviewsDots = document.querySelector("[data-reviews-dots]");
 const dataLayer = (window.dataLayer = window.dataLayer || []);
 
 const pushEvent = (eventName, payload = {}) => {
-  dataLayer.push({ event: eventName, ...payload });
+  dataLayer.push({
+    event: eventName,
+    page_path: window.location.pathname,
+    page_url: window.location.href,
+    page_title: document.title,
+    ...payload,
+  });
+};
+
+const getElementLabel = (element) =>
+  (element?.dataset.eventLabel ||
+    element?.getAttribute("aria-label") ||
+    element?.textContent ||
+    "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getElementLocation = (element) => {
+  const section = element?.closest("section, header, footer, form");
+  if (!section) return "page";
+  if (section.id) return section.id;
+  if (section.className && typeof section.className === "string") {
+    return section.className.split(" ").filter(Boolean)[0] || "page";
+  }
+  return "page";
 };
 
 const setHeaderState = () => {
@@ -131,12 +155,33 @@ revealElements.forEach((element, index) => {
 });
 
 document.querySelectorAll("[data-cta]").forEach((button) => {
-  button.addEventListener("click", () => pushEvent("cta_click"));
+  button.addEventListener("click", () =>
+    pushEvent("cta_click", {
+      cta_text: getElementLabel(button),
+      cta_location: getElementLocation(button),
+      cta_target: button.getAttribute("href") || "",
+    })
+  );
 });
 
 document.querySelectorAll("[data-phone-call]").forEach((link) => {
   link.addEventListener("click", () => {
-    pushEvent("phone_call");
+    pushEvent("phone_call", {
+      phone_number: (link.getAttribute("href") || "").replace("tel:", ""),
+      click_text: getElementLabel(link),
+      click_location: getElementLocation(link),
+    });
+  });
+});
+
+document.querySelectorAll("[data-social-link]").forEach((link) => {
+  link.addEventListener("click", () => {
+    pushEvent("social_click", {
+      social_platform: link.dataset.socialPlatform || "",
+      social_url: link.getAttribute("href") || "",
+      click_text: getElementLabel(link),
+      click_location: getElementLocation(link),
+    });
   });
 });
 
@@ -499,7 +544,17 @@ form?.addEventListener("submit", async (event) => {
       throw new Error(result.error || "submit_failed");
     }
 
-    pushEvent("form_submit", { lead_type: "form" });
+    pushEvent("form_submit", {
+      form_name: "lead_form",
+      form_location: getElementLocation(form),
+      lead_type: payload.type,
+    });
+    pushEvent("generate_lead", {
+      form_name: "lead_form",
+      form_location: getElementLocation(form),
+      lead_type: payload.type,
+      method: "site_form",
+    });
     form.reset();
     if (leadTypeInput) {
       leadTypeInput.value = "форма";

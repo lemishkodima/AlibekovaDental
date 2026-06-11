@@ -25,11 +25,37 @@
     <link rel="icon" href="assets/favicon-placeholder.svg" type="image/svg+xml" />
     <link rel="preload" href="styles.css" as="style" />
     <link rel="stylesheet" href="styles.css" />
-    <!-- [ЗАПОВНИТИ GTM-ID] -->
+    <!-- Google Tag Manager -->
+    <script>
+      (function(w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+          "gtm.start": new Date().getTime(),
+          event: "gtm.js"
+        });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-NR36TD2K");
+    </script>
+    <!-- End Google Tag Manager -->
     <!-- [ЗАПОВНИТИ GA4 Measurement ID] -->
     <!-- [ЗАПОВНИТИ Ringostat] -->
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-NR36TD2K"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <header class="site-header" data-header>
       <div class="header-inner">
         <a href="#hero" class="brand" aria-label="Albekova Dental">
@@ -956,6 +982,8 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
+                  data-social-link
+                  data-social-platform="facebook"
                 >
                   <span class="messenger-icon">f</span>
                   Facebook
@@ -965,6 +993,8 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
+                  data-social-link
+                  data-social-platform="instagram"
                 >
                   <span class="messenger-icon">ig</span>
                   Instagram
@@ -992,6 +1022,8 @@
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
+              data-social-link
+              data-social-platform="facebook"
             >
               <span class="messenger-icon">f</span>
             </a>
@@ -1000,6 +1032,8 @@
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
+              data-social-link
+              data-social-platform="instagram"
             >
               <span class="messenger-icon">ig</span>
             </a>
