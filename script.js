@@ -18,6 +18,12 @@ const roadmapSection = document.querySelector("[data-roadmap-section]");
 const roadmapSteps = [...document.querySelectorAll("[data-roadmap-step]")];
 const roadmapProgress = document.querySelector("[data-roadmap-progress]");
 const gallerySlides = [...document.querySelectorAll("[data-gallery-track] [data-gallery-item]")];
+const reviewsCarousel = document.querySelector("[data-reviews-carousel]");
+const reviewsViewport = document.querySelector("[data-reviews-viewport]");
+const reviewSlides = [...document.querySelectorAll("[data-review-slide]")];
+const reviewsPrevButton = document.querySelector("[data-reviews-prev]");
+const reviewsNextButton = document.querySelector("[data-reviews-next]");
+const reviewsDots = document.querySelector("[data-reviews-dots]");
 
 const dataLayer = (window.dataLayer = window.dataLayer || []);
 
@@ -128,15 +134,6 @@ document.querySelectorAll("[data-cta]").forEach((button) => {
   button.addEventListener("click", () => pushEvent("cta_click"));
 });
 
-document.querySelectorAll("[data-messenger]").forEach((link) => {
-  link.addEventListener("click", (event) => {
-    if ((link.getAttribute("href") || "") === "#") {
-      event.preventDefault();
-    }
-    pushEvent(`messenger_click_${link.dataset.messenger}`);
-  });
-});
-
 document.querySelectorAll("[data-phone-call]").forEach((link) => {
   link.addEventListener("click", () => {
     pushEvent("phone_call");
@@ -226,6 +223,119 @@ const syncRoadmapState = () => {
 window.addEventListener("load", syncRoadmapState);
 window.addEventListener("resize", syncRoadmapState);
 window.addEventListener("scroll", syncRoadmapState, { passive: true });
+
+if (reviewsCarousel && reviewsViewport && reviewSlides.length > 0) {
+  let currentPage = 0;
+  let autoplayId = 0;
+
+  const getPerView = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) return 1;
+    if (window.matchMedia("(max-width: 1199px)").matches) return 2;
+    return 3;
+  };
+
+  const getPageCount = () => Math.ceil(reviewSlides.length / getPerView());
+
+  const getStepWidth = () => reviewsViewport.clientWidth + 18;
+
+  const renderDots = () => {
+    if (!reviewsDots) return;
+    const pageCount = getPageCount();
+    reviewsDots.innerHTML = "";
+
+    Array.from({ length: pageCount }).forEach((_, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = `reviews-dot${index === currentPage ? " is-active" : ""}`;
+      dot.setAttribute("aria-label", `Перейти до групи відгуків ${index + 1}`);
+      dot.addEventListener("click", () => {
+        currentPage = index;
+        scrollToCurrentPage();
+        restartAutoplay();
+      });
+      reviewsDots.append(dot);
+    });
+  };
+
+  const updateControls = () => {
+    if (reviewsDots) {
+      [...reviewsDots.children].forEach((dot, index) => {
+        dot.classList.toggle("is-active", index === currentPage);
+      });
+    }
+
+    const pageCount = getPageCount();
+    if (reviewsPrevButton) {
+      reviewsPrevButton.disabled = pageCount <= 1;
+    }
+    if (reviewsNextButton) {
+      reviewsNextButton.disabled = pageCount <= 1;
+    }
+  };
+
+  const scrollToCurrentPage = () => {
+    const offset = currentPage * getStepWidth();
+    const track = reviewsCarousel.querySelector("[data-reviews-track]");
+    if (track) {
+      track.style.transform = `translate3d(-${offset}px, 0, 0)`;
+    }
+    updateControls();
+  };
+
+  const setPage = (page) => {
+    const pageCount = getPageCount();
+    currentPage = ((page % pageCount) + pageCount) % pageCount;
+    scrollToCurrentPage();
+  };
+
+  const nextPage = () => setPage(currentPage + 1);
+  const prevPage = () => setPage(currentPage - 1);
+
+  const stopAutoplay = () => {
+    window.clearInterval(autoplayId);
+  };
+
+  const startAutoplay = () => {
+    stopAutoplay();
+    if (getPageCount() <= 1) return;
+    autoplayId = window.setInterval(nextPage, 5200);
+  };
+
+  const restartAutoplay = () => {
+    updateControls();
+    startAutoplay();
+  };
+
+  reviewsPrevButton?.addEventListener("click", () => {
+    prevPage();
+    restartAutoplay();
+  });
+
+  reviewsNextButton?.addEventListener("click", () => {
+    nextPage();
+    restartAutoplay();
+  });
+
+  ["mouseenter", "focusin"].forEach((eventName) => {
+    reviewsCarousel.addEventListener(eventName, stopAutoplay);
+  });
+
+  ["mouseleave", "focusout"].forEach((eventName) => {
+    reviewsCarousel.addEventListener(eventName, startAutoplay);
+  });
+
+  window.addEventListener("resize", () => {
+    const pageCount = getPageCount();
+    currentPage = Math.min(currentPage, pageCount - 1);
+    renderDots();
+    scrollToCurrentPage();
+    startAutoplay();
+  });
+
+  renderDots();
+  updateControls();
+  startAutoplay();
+}
 
 const faqItems = [...document.querySelectorAll(".faq-item")];
 
