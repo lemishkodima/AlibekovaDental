@@ -63,12 +63,28 @@ document.addEventListener("keydown", (event) => {
 if (heroTitle) {
   const text = heroTitle.textContent || "";
   heroTitle.textContent = "";
-  [...text].forEach((character, index) => {
-    const span = document.createElement("span");
-    span.className = character === " " ? "char space" : "char";
-    span.textContent = character === " " ? "\u00A0" : character;
-    span.style.setProperty("--char-delay", `${index * 38}ms`);
-    heroTitle.append(span);
+  let charIndex = 0;
+  text.split(" ").forEach((word, wordIndex, words) => {
+    const wordSpan = document.createElement("span");
+    wordSpan.className = "word";
+
+    [...word].forEach((character) => {
+      const charSpan = document.createElement("span");
+      charSpan.className = "char";
+      charSpan.textContent = character;
+      charSpan.style.setProperty("--char-delay", `${charIndex * 38}ms`);
+      wordSpan.append(charSpan);
+      charIndex += 1;
+    });
+
+    heroTitle.append(wordSpan);
+
+    if (wordIndex < words.length - 1) {
+      const spaceSpan = document.createElement("span");
+      spaceSpan.className = "word-space";
+      spaceSpan.textContent = "\u00A0";
+      heroTitle.append(spaceSpan);
+    }
   });
 }
 

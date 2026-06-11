@@ -371,6 +371,20 @@ input {
 
 .hero-title {
   overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.24em;
+  row-gap: 0.08em;
+  text-wrap: initial;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.hero-title .word {
+  display: inline-flex;
+  white-space: nowrap;
 }
 
 .hero-title .char {
@@ -381,8 +395,8 @@ input {
   animation-delay: var(--char-delay, 0ms);
 }
 
-.hero-title .char.space {
-  width: 0.28em;
+.hero-title .word-space {
+  display: none;
 }
 
 .hero-text {
@@ -1697,7 +1711,7 @@ input {
   }
 
   .hero h1 {
-    font-size: clamp(2.15rem, 10.6vw, 3.4rem);
+    font-size: clamp(1.92rem, 9.2vw, 3.05rem);
   }
 
   .hero-text {
