@@ -917,6 +917,7 @@ input {
 
 .reviews-viewport {
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .reviews-track {
@@ -924,6 +925,10 @@ input {
   gap: 18px;
   transition: transform 0.42s cubic-bezier(0.22, 0.74, 0.2, 1);
   will-change: transform;
+}
+
+.reviews-track.is-dragging {
+  transition: none;
 }
 
 .reviews-controls {

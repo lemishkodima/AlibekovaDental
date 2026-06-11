@@ -227,6 +227,11 @@ window.addEventListener("scroll", syncRoadmapState, { passive: true });
 if (reviewsCarousel && reviewsViewport && reviewSlides.length > 0) {
   let currentPage = 0;
   let autoplayId = 0;
+  let dragStartX = 0;
+  let dragDeltaX = 0;
+  let isDragging = false;
+  let dragPointerId = null;
+  const reviewsTrack = reviewsCarousel.querySelector("[data-reviews-track]");
 
   const getPerView = () => {
     if (window.matchMedia("(max-width: 767px)").matches) return 1;
@@ -275,9 +280,8 @@ if (reviewsCarousel && reviewsViewport && reviewSlides.length > 0) {
 
   const scrollToCurrentPage = () => {
     const offset = currentPage * getStepWidth();
-    const track = reviewsCarousel.querySelector("[data-reviews-track]");
-    if (track) {
-      track.style.transform = `translate3d(-${offset}px, 0, 0)`;
+    if (reviewsTrack) {
+      reviewsTrack.style.transform = `translate3d(-${offset}px, 0, 0)`;
     }
     updateControls();
   };
@@ -306,6 +310,32 @@ if (reviewsCarousel && reviewsViewport && reviewSlides.length > 0) {
     startAutoplay();
   };
 
+  const applyDragOffset = (deltaX) => {
+    if (!reviewsTrack) return;
+    const offset = currentPage * getStepWidth();
+    reviewsTrack.style.transform = `translate3d(${-(offset) + deltaX}px, 0, 0)`;
+  };
+
+  const endDrag = () => {
+    if (!isDragging) return;
+
+    const swipeThreshold = Math.min(96, Math.max(52, reviewsViewport.clientWidth * 0.14));
+    reviewsTrack?.classList.remove("is-dragging");
+
+    if (dragDeltaX <= -swipeThreshold) {
+      nextPage();
+    } else if (dragDeltaX >= swipeThreshold) {
+      prevPage();
+    } else {
+      scrollToCurrentPage();
+    }
+
+    isDragging = false;
+    dragPointerId = null;
+    dragDeltaX = 0;
+    restartAutoplay();
+  };
+
   reviewsPrevButton?.addEventListener("click", () => {
     prevPage();
     restartAutoplay();
@@ -322,6 +352,37 @@ if (reviewsCarousel && reviewsViewport && reviewSlides.length > 0) {
 
   ["mouseleave", "focusout"].forEach((eventName) => {
     reviewsCarousel.addEventListener(eventName, startAutoplay);
+  });
+
+  reviewsViewport.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    isDragging = true;
+    dragPointerId = event.pointerId;
+    dragStartX = event.clientX;
+    dragDeltaX = 0;
+    stopAutoplay();
+    reviewsTrack?.classList.add("is-dragging");
+    reviewsViewport.setPointerCapture?.(event.pointerId);
+  });
+
+  reviewsViewport.addEventListener("pointermove", (event) => {
+    if (!isDragging || dragPointerId !== event.pointerId) return;
+    dragDeltaX = event.clientX - dragStartX;
+    applyDragOffset(dragDeltaX);
+  });
+
+  reviewsViewport.addEventListener("pointerup", (event) => {
+    if (dragPointerId !== event.pointerId) return;
+    endDrag();
+  });
+
+  reviewsViewport.addEventListener("pointercancel", (event) => {
+    if (dragPointerId !== event.pointerId) return;
+    endDrag();
+  });
+
+  reviewsViewport.addEventListener("lostpointercapture", () => {
+    endDrag();
   });
 
   window.addEventListener("resize", () => {
